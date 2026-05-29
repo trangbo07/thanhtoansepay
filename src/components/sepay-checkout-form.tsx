@@ -11,6 +11,7 @@ type SePayCheckoutFormProps = {
   cancelPath: string;
   paymentMethod?: "BANK_TRANSFER" | "NAPAS_BANK_TRANSFER";
   currency?: string;
+  autoStart?: boolean;
 };
 
 type CheckoutFieldValue = string | number | boolean | null | undefined;
@@ -29,6 +30,7 @@ export function SePayCheckoutForm({
   cancelPath,
   paymentMethod = "BANK_TRANSFER",
   currency = "VND",
+  autoStart = false,
 }: SePayCheckoutFormProps) {
   const [checkout, setCheckout] = useState<CheckoutResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -69,10 +71,15 @@ export function SePayCheckoutForm({
   }
 
   useEffect(() => {
+    if (autoStart && !checkout && !loading && !error) {
+      void createCheckout();
+      return;
+    }
+
     if (checkout && formRef.current) {
       formRef.current.submit();
     }
-  }, [checkout]);
+  }, [autoStart, checkout, error, loading]);
 
   if (error) {
     return (

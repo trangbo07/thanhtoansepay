@@ -3,24 +3,40 @@ import { SePayCheckoutForm } from "@/components/sepay-checkout-form";
 export default function Home() {
   const featuredApis = [
     {
+      invoice: "DH123",
       name: "AI Chatbot Pro",
       category: "Chatbot",
       price: "149.000đ / tháng",
+      amount: 149000,
       description: "Bot hỗ trợ đa kênh, tự động trả lời và chuyển tiếp cho đội ngũ.",
     },
     {
+      invoice: "DH124",
       name: "Developer API Vault",
       category: "API Access",
       price: "299.000đ / tháng",
+      amount: 299000,
       description: "Bộ API key, quota và dashboard dùng cho team dev và startup.",
     },
     {
+      invoice: "DH125",
       name: "Commerce Bot Suite",
       category: "Automation",
       price: "199.000đ / tháng",
+      amount: 199000,
       description: "Kịch bản bán hàng, lead gen và chăm sóc khách hàng tích hợp CRM.",
     },
   ];
+
+  function buildOrderUrl(invoice: string, amount: number, description: string) {
+    const params = new URLSearchParams({
+      amount: String(amount),
+      description,
+      payment: "pending",
+    });
+
+    return `/order/${invoice}?${params.toString()}`;
+  }
 
   const trustSignals = [
     "Xác minh nhà cung cấp",
@@ -138,7 +154,7 @@ export default function Home() {
                   <p className="mt-1 text-xl font-semibold text-white">{item.price}</p>
                 </div>
                 <a
-                  href="#payment"
+                  href={buildOrderUrl(item.invoice, item.amount, item.description)}
                   className="rounded-full border border-white/12 bg-slate-900/70 px-4 py-2 text-sm font-medium text-white transition group-hover:border-emerald-400/30 group-hover:bg-emerald-400/15"
                 >
                   Mua ngay

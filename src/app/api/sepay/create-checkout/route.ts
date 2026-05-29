@@ -12,12 +12,6 @@ function resolvePublicBaseUrl(request: Request) {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 }
 
-function resolveCheckoutUrl(env: "sandbox" | "production") {
-  return env === "production"
-    ? "https://pay.sepay.vn/v1/init"
-    : "https://sandbox.pay.sepay.vn/v1/init";
-}
-
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
 
@@ -65,7 +59,7 @@ export async function POST(request: Request) {
     secret_key: secretKey,
   });
 
-  const checkoutUrl = resolveCheckoutUrl(sepayEnv);
+  const checkoutUrl = client.checkout.initCheckoutUrl();
 
   const fields = client.checkout.initOneTimePaymentFields({
     operation: "PURCHASE",
