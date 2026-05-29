@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { ProductThumbnail } from "@/components/product-thumbnail";
 import { buildOrderUrl, discountPercent, type Product } from "@/lib/products";
-import { formatCurrency, formatPrice, formatUsd } from "@/lib/format";
-import { USD_TO_VND } from "@/lib/products";
+import { formatPrice, formatUsd } from "@/lib/format";
 
 function Stars({ rating }: { rating: number }) {
   return (
@@ -33,11 +33,7 @@ export function ProductCard({ product }: { product: Product }) {
         <span className="absolute left-6 top-6 z-10 rounded-md bg-rose-600 px-2 py-0.5 text-[11px] font-bold uppercase text-white shadow">
           {product.badge}
         </span>
-        <div
-          className={`flex aspect-[4/3] items-center justify-center rounded-xl bg-gradient-to-br ${product.accent} text-white shadow-inner`}
-        >
-          <span className="text-3xl font-black tracking-tight opacity-95">{product.icon}</span>
-        </div>
+        <ProductThumbnail product={product} />
       </div>
 
       <div className="flex flex-1 flex-col p-4 pt-3">
@@ -57,8 +53,8 @@ export function ProductCard({ product }: { product: Product }) {
           {product.priceUsd != null ? (
             <>
               <p className="text-xl font-bold text-rose-600">{formatUsd(product.priceUsd)}</p>
-              <p className="mt-0.5 text-xs text-slate-500">
-                ≈ {formatPrice(product.amount)} · quy đổi {formatCurrency(USD_TO_VND)}đ/USD
+              <p className="mt-0.5 text-xs font-medium text-slate-600">
+                Thanh toán: {formatPrice(product.amount)}
               </p>
             </>
           ) : (
@@ -68,7 +64,7 @@ export function ProductCard({ product }: { product: Product }) {
             <p className="mt-0.5 text-xs text-slate-400">
               {product.priceUsd != null ? (
                 <span className="line-through">
-                  {formatUsd(product.originalAmount / USD_TO_VND)}
+                  {formatUsd(product.originalPriceUsd ?? product.priceUsd)}
                 </span>
               ) : (
                 <span className="line-through">{formatPrice(product.originalAmount)}</span>

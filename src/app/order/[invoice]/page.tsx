@@ -1,5 +1,4 @@
-import { SepayEnvBanner } from "@/components/sepay-env-banner";
-import { SePayCheckoutForm } from "@/components/sepay-checkout-form";
+import { OrderPayment } from "@/components/order-payment";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { formatCurrency } from "@/lib/format";
@@ -25,9 +24,10 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
   const productName = query.product ?? product?.name ?? `Đơn hàng ${invoice}`;
   const description = query.description ?? productName;
   const paymentState = query.payment;
-  const shouldAutoStart = !paymentState || paymentState === "pending";
 
-  const successUrl = `/order/${invoice}/success?amount=${encodeURIComponent(String(amount))}&description=${encodeURIComponent(description)}&product=${encodeURIComponent(productName)}`;
+  const baseQuery = `amount=${amount}&description=${encodeURIComponent(description)}&product=${encodeURIComponent(productName)}`;
+  const successUrl = `/order/${invoice}/success?${baseQuery}`;
+  const orderPath = `/order/${invoice}?${baseQuery}`;
 
   if (paymentState === "success") {
     redirect(successUrl);
@@ -46,7 +46,6 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
           </div>
 
           <div className="space-y-4 p-6">
-            <SepayEnvBanner />
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
                 <p className="text-xs text-slate-500">Số tiền</p>
@@ -56,31 +55,26 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
               </div>
               <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
                 <p className="text-xs text-slate-500">Trạng thái</p>
-                <p className="mt-1 text-sm font-semibold text-[#1d6fd8]">Chuyển sang SePay...</p>
+                <p className="mt-1 text-sm font-semibold text-slate-700">Chờ chọn cổng thanh toán</p>
               </div>
             </div>
 
             {paymentState && paymentState !== "pending" ? (
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
                 {paymentState === "cancel"
-                  ? "Bạn đã hủy thanh toán. Bạn có thể thử lại bên dưới."
-                  : "Thanh toán gặp lỗi. Vui lòng thử lại hoặc liên hệ hỗ trợ."}
+                  ? "Bạn đã hủy thanh toán SePay. Chọn lại cổng bên dưới."
+                  : "Thanh toán SePay gặp lỗi. Thử lại hoặc dùng VietQR."}
               </div>
-            ) : (
-              <p className="rounded-xl border border-sky-100 bg-sky-50 p-4 text-sm text-sky-900">
-                Trang sẽ tự tạo checkout và chuyển sang cổng SePay khi bạn mở đơn hàng.
-              </p>
-            )}
+            ) : null}
 
-            <SePayCheckoutForm
-              orderInvoiceNumber={invoice}
-              orderAmount={amount > 0 ? amount : 10000}
-              orderDescription={description}
-              successPath={successUrl}
-              errorPath={`/order/${invoice}?payment=error&amount=${amount}&description=${encodeURIComponent(description)}&product=${encodeURIComponent(productName)}`}
-              cancelPath={`/order/${invoice}?payment=cancel&amount=${amount}&description=${encodeURIComponent(description)}&product=${encodeURIComponent(productName)}`}
-              paymentMethod="BANK_TRANSFER"
-              autoStart={shouldAutoStart}
+            <OrderPayment
+              invoice={invoice}
+              amount={amount}
+              productName={productName}
+              description={description}
+              successUrl={successUrl}
+              errorPath={`${orderPath}&payment=error`}
+              cancelPath={`${orderPath}&payment=cancel`}
             />
           </div>
         </div>

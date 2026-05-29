@@ -1,5 +1,8 @@
-/** Tỷ giá quy đổi khi thanh toán SePay (VND) */
-export const USD_TO_VND = 25_000;
+import { PRODUCT_IMAGES } from "@/lib/product-images";
+
+/** API Chatbot AI: $20 thanh toán đúng 526.550đ qua SePay */
+export const CHATBOT_AI_USD = 20;
+export const CHATBOT_AI_VND = 526_550;
 
 export type Product = {
   id: string;
@@ -7,11 +10,12 @@ export type Product = {
   name: string;
   category: string;
   description: string;
-  /** Số tiền VND gửi sang SePay */
+  /** Số tiền VND gửi sang SePay (phải khớp số hiển thị) */
   amount: number;
   originalAmount: number;
   /** Giá hiển thị USD, ví dụ 20 → "$20" */
   priceUsd?: number;
+  originalPriceUsd?: number;
   rating: number;
   sold: string;
   stockTotal: number;
@@ -19,32 +23,33 @@ export type Product = {
   badge: string;
   accent: string;
   icon: string;
+  imageUrl?: string;
 };
 
-export function usdToVnd(usd: number) {
-  return usd * USD_TO_VND;
-}
-
 export const SITE = {
-  name: "SepayHub",
-  tagline: "Tài khoản hỗ trợ thanh toán online",
+  name: "taikhoantech.store",
+  legalName: "CÔNG TY TNHH SEPAYHUB",
+  tagline: "TIN CẬY - TIỆN ÍCH - TẬN TÌNH",
   phone: "0865 890 208",
   email: "hotro@sepayhub.vn",
-  address: "Tầng 8, Tòa nhà Innovation, Quận 1, TP.HCM",
+  address: "24 Công viên phần mềm Quang Trung, Trung Mỹ Tây, Hồ Chí Minh",
   taxCode: "0312345678",
+  bankAccount: "1037938021 — Vietcombank",
+  lookupWebsite: "https://taikhoantech.store/",
 };
 
 export const PRODUCTS: Product[] = [
   {
     id: "sp-chatbot",
-    invoice: "DH123",
-    name: "API Chatbot AI",
+    invoice: "AI9182787",
+    name: "API Chatbot",
     category: "Chatbot",
     description:
       "API chatbot đa kênh, tự động trả lời, webhook và quota hàng tháng — tích hợp nhanh cho web/app.",
-    priceUsd: 20,
-    amount: usdToVnd(20),
-    originalAmount: usdToVnd(35),
+    priceUsd: CHATBOT_AI_USD,
+    originalPriceUsd: 35,
+    amount: CHATBOT_AI_VND,
+    originalAmount: 921_463,
     rating: 4.9,
     sold: "6,8k",
     stockTotal: 500,
@@ -52,6 +57,7 @@ export const PRODUCTS: Product[] = [
     badge: "Giá tốt",
     accent: "from-indigo-500 to-violet-700",
     icon: "AI",
+    imageUrl: PRODUCT_IMAGES.chatbotAi,
   },
   {
     id: "sp-01",
@@ -68,6 +74,7 @@ export const PRODUCTS: Product[] = [
     badge: "Giảm sâu",
     accent: "from-sky-500 to-blue-700",
     icon: "SP",
+    imageUrl: PRODUCT_IMAGES.sepayIcon,
   },
   {
     id: "sp-02",
@@ -84,6 +91,7 @@ export const PRODUCTS: Product[] = [
     badge: "Bán chạy",
     accent: "from-violet-500 to-purple-700",
     icon: "PR",
+    imageUrl: PRODUCT_IMAGES.momoVnpay,
   },
   {
     id: "sp-03",
@@ -100,6 +108,7 @@ export const PRODUCTS: Product[] = [
     badge: "Giảm sâu",
     accent: "from-emerald-500 to-teal-700",
     icon: "API",
+    imageUrl: PRODUCT_IMAGES.webhooks,
   },
   {
     id: "sp-04",
@@ -116,6 +125,7 @@ export const PRODUCTS: Product[] = [
     badge: "Premium",
     accent: "from-amber-500 to-orange-600",
     icon: "7D",
+    imageUrl: PRODUCT_IMAGES.sepayIcon,
   },
   {
     id: "sp-05",
@@ -132,6 +142,7 @@ export const PRODUCTS: Product[] = [
     badge: "Giảm sâu",
     accent: "from-rose-500 to-red-600",
     icon: "HD",
+    imageUrl: PRODUCT_IMAGES.invoice,
   },
   {
     id: "sp-06",
@@ -148,6 +159,7 @@ export const PRODUCTS: Product[] = [
     badge: "Combo tiết kiệm",
     accent: "from-cyan-500 to-blue-600",
     icon: "ST",
+    imageUrl: PRODUCT_IMAGES.startup,
   },
   {
     id: "sp-07",
@@ -164,6 +176,7 @@ export const PRODUCTS: Product[] = [
     badge: "Giá tốt",
     accent: "from-indigo-500 to-blue-800",
     icon: "SB",
+    imageUrl: PRODUCT_IMAGES.genericAi,
   },
   {
     id: "sp-08",
@@ -180,6 +193,7 @@ export const PRODUCTS: Product[] = [
     badge: "Còn ít",
     accent: "from-fuchsia-500 to-pink-600",
     icon: "WL",
+    imageUrl: PRODUCT_IMAGES.whiteLabelCheckout,
   },
   {
     id: "sp-09",
@@ -196,6 +210,7 @@ export const PRODUCTS: Product[] = [
     badge: "Giảm sâu",
     accent: "from-slate-600 to-slate-800",
     icon: "IPN",
+    imageUrl: PRODUCT_IMAGES.webhooks,
   },
   {
     id: "sp-10",
@@ -212,6 +227,7 @@ export const PRODUCTS: Product[] = [
     badge: "Enterprise",
     accent: "from-yellow-500 to-amber-600",
     icon: "EN",
+    imageUrl: PRODUCT_IMAGES.sepayIcon,
   },
 ];
 

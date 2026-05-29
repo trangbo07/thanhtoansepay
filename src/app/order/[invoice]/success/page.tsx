@@ -10,6 +10,7 @@ type SuccessPageProps = {
     amount?: string;
     description?: string;
     product?: string;
+    method?: string;
   }>;
 };
 
@@ -21,12 +22,14 @@ export default async function OrderSuccessPage({ params, searchParams }: Success
   const amount = Number(query.amount ?? product?.amount ?? 0);
   const description = query.description ?? `Thanh toán đơn hàng ${invoice}`;
   const productName = query.product ?? product?.name ?? description;
+  const paymentMethod = query.method === "vietqr" ? "VietQR / chuyển khoản" : "SePay";
 
   const invoiceUrl = buildInvoiceUrl(invoice, {
     amount,
     description,
     product: productName,
     status: "paid",
+    method: query.method,
   });
 
   return (
@@ -68,7 +71,7 @@ export default async function OrderSuccessPage({ params, searchParams }: Success
             <p className="mt-2 text-sm text-slate-500">{description}</p>
             {amount > 0 ? (
               <p className="mt-3 text-xs text-slate-400">
-                Số tiền: {formatCurrency(amount)} VND · Cổng SePay
+                Số tiền: {formatCurrency(amount)} VND · Cổng: {paymentMethod}
               </p>
             ) : null}
           </div>
