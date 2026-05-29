@@ -83,7 +83,7 @@ export function SePayCheckoutForm({
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-rose-500/20 bg-rose-500/8 p-4 text-rose-100">
+      <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
         Lỗi: {error}
       </div>
     );
@@ -92,20 +92,23 @@ export function SePayCheckoutForm({
   if (!checkout) {
     return (
       <div className="space-y-3">
-        <div className="grid gap-3 rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-slate-200 sm:grid-cols-2">
+        <div className="grid gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm sm:grid-cols-2">
           <div>
-            <p className="text-slate-400">Mã đơn hàng</p>
-            <p className="mt-1 font-medium text-white">{orderInvoiceNumber}</p>
+            <p className="text-slate-500">Mã đơn hàng</p>
+            <p className="mt-1 font-semibold text-slate-800">{orderInvoiceNumber}</p>
           </div>
           <div>
-            <p className="text-slate-400">Số tiền</p>
-            <p className="mt-1 font-medium text-white">{orderAmount.toLocaleString("vi-VN")} {currency}</p>
+            <p className="text-slate-500">Số tiền</p>
+            <p className="mt-1 font-semibold text-rose-600">
+              {orderAmount.toLocaleString("vi-VN")} {currency}
+            </p>
           </div>
         </div>
 
         <button
+          type="button"
           onClick={createCheckout}
-          className="inline-flex w-full items-center justify-center rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300"
+          className="inline-flex w-full items-center justify-center rounded-lg bg-[#1d6fd8] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1558b0] disabled:opacity-60"
           disabled={loading}
         >
           {loading ? "Đang tạo đơn..." : "Thanh toán ngay qua SePay"}
@@ -120,8 +123,11 @@ export function SePayCheckoutForm({
         .filter(([, value]) => value !== undefined && value !== null && value !== "")
         .map(([name, value]) => (
           <input key={name} type="hidden" name={name} value={String(value)} />
-      ))}
-      <button type="submit" className="inline-flex w-full items-center justify-center rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300">
+        ))}
+      <button
+        type="submit"
+        className="inline-flex w-full items-center justify-center rounded-lg bg-[#1d6fd8] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1558b0]"
+      >
         Chuyển sang SePay
       </button>
     </form>

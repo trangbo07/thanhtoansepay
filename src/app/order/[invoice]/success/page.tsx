@@ -1,64 +1,106 @@
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { buildInvoiceUrl } from "@/lib/invoice";
+import { formatCurrency, formatPrice } from "@/lib/format";
+import { getProductByInvoice } from "@/lib/products";
+
 type SuccessPageProps = {
-  params: { invoice: string };
-  searchParams: {
+  params: Promise<{ invoice: string }>;
+  searchParams: Promise<{
     amount?: string;
     description?: string;
-  };
+    product?: string;
+  }>;
 };
 
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("vi-VN").format(amount);
-}
+export default async function OrderSuccessPage({ params, searchParams }: SuccessPageProps) {
+  const { invoice } = await params;
+  const query = await searchParams;
 
-export default function OrderSuccessPage({ params, searchParams }: SuccessPageProps) {
-  const amount = Number(searchParams.amount ?? 0);
-  const description = searchParams.description ?? `Thanh toan don hang ${params.invoice}`;
+  const product = getProductByInvoice(invoice);
+  const amount = Number(query.amount ?? product?.amount ?? 0);
+  const description = query.description ?? `Thanh toán đơn hàng ${invoice}`;
+  const productName = query.product ?? product?.name ?? description;
+
+  const invoiceUrl = buildInvoiceUrl(invoice, {
+    amount,
+    description,
+    product: productName,
+    status: "paid",
+  });
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.18),_transparent_32%),linear-gradient(180deg,_#06131f_0%,_#0b1727_50%,_#08101b_100%)] px-6 py-10 text-white sm:px-8">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-        <div className="rounded-[2rem] border border-emerald-400/20 bg-emerald-400/10 p-8 shadow-2xl shadow-black/20 backdrop-blur">
-          <p className="text-sm uppercase tracking-[0.3em] text-emerald-100/80">Thanh toán thành công</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight">Đơn hàng {params.invoice} đã được xác nhận</h1>
-          <p className="mt-4 max-w-2xl leading-8 text-emerald-50/85">
-            SePay đã trả về trạng thái thành công. Hệ thống có thể tiếp tục bàn giao sản phẩm, cấp quyền truy cập,
-            hoặc cập nhật trạng thái đơn hàng ở backend của bạn.
-          </p>
-        </div>
+    <div className="flex min-h-screen flex-col bg-[#f0f4f8]">
+      <SiteHeader />
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Mã đơn hàng</p>
-            <p className="mt-2 text-2xl font-semibold text-white">{params.invoice}</p>
-          </div>
-          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Số tiền</p>
-            <p className="mt-2 text-2xl font-semibold text-white">
-              {amount > 0 ? `${formatCurrency(amount)} VND` : "Chưa có số tiền"}
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-10">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 px-8 py-10 text-center text-white">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/20 text-3xl">
+              ✓
+            </div>
+            <p className="text-sm font-medium uppercase tracking-wider opacity-90">Thanh toán thành công</p>
+            <h1 className="mt-2 text-2xl font-bold">Cảm ơn bạn đã mua hàng!</h1>
+            <p className="mt-3 text-sm text-emerald-50">
+              Đơn {invoice} đã được ghi nhận. Tài khoản / quyền truy cập sẽ được bàn giao trong vài phút.
             </p>
           </div>
-        </div>
 
-        <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-slate-200">
-          <p className="text-sm uppercase tracking-[0.25em] text-cyan-200/70">Mô tả</p>
-          <p className="mt-3 text-lg leading-8 text-white">{description}</p>
-        </div>
+          <div className="grid gap-4 p-6 sm:grid-cols-3">
+            <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-center">
+              <p className="text-xs text-slate-500">Trạng thái</p>
+              <p className="mt-1 font-bold text-emerald-600">Đã thanh toán</p>
+            </div>
+            <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-center">
+              <p className="text-xs text-slate-500">Mã đơn</p>
+              <p className="mt-1 font-bold text-slate-800">{invoice}</p>
+            </div>
+            <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-center">
+              <p className="text-xs text-slate-500">Số tiền</p>
+              <p className="mt-1 font-bold text-rose-600">
+                {amount > 0 ? formatPrice(amount) : "—"}
+              </p>
+            </div>
+          </div>
 
-        <div className="flex flex-wrap gap-3">
-          <a
-            href={`/order/${params.invoice}?amount=${amount}&description=${encodeURIComponent(description)}`}
-            className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300"
-          >
-            Về trang đơn hàng
-          </a>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-          >
-            Về trang chủ
-          </a>
+          <div className="border-t border-slate-100 px-6 py-5">
+            <p className="text-sm font-semibold text-slate-800">{productName}</p>
+            <p className="mt-2 text-sm text-slate-500">{description}</p>
+            {amount > 0 ? (
+              <p className="mt-3 text-xs text-slate-400">
+                Số tiền: {formatCurrency(amount)} VND · Cổng SePay
+              </p>
+            ) : null}
+          </div>
+
+          <div className="flex flex-wrap gap-3 border-t border-slate-100 bg-slate-50/80 px-6 py-5">
+            <a
+              href={invoiceUrl}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#1d6fd8] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1558b0] sm:flex-none"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+              </svg>
+              Xem & in hóa đơn
+            </a>
+            <a
+              href={`/order/${invoice}?amount=${amount}&description=${encodeURIComponent(description)}&product=${encodeURIComponent(productName)}`}
+              className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Chi tiết đơn
+            </a>
+            <a
+              href="/"
+              className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Tiếp tục mua
+            </a>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+
+      <SiteFooter />
+    </div>
   );
 }

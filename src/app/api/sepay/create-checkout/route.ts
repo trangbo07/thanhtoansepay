@@ -1,3 +1,4 @@
+import { getSepayEnvironment } from "@/lib/sepay-config";
 import { SePayPgClient } from "sepay-pg-node";
 import { NextResponse } from "next/server";
 
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
 
   const merchantId = process.env.SEPAY_MERCHANT_ID;
   const secretKey = process.env.SEPAY_SECRET_KEY;
-  const sepayEnv = process.env.SEPAY_ENV === "production" ? "production" : "sandbox";
+  const sepayEnv = getSepayEnvironment();
   const siteUrl = resolvePublicBaseUrl(request);
 
   if (!order_invoice_number || !order_amount || !success_path || !error_path || !cancel_path) {

@@ -1,20 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin", "vietnamese"],
 });
 
 export const metadata: Metadata = {
-  title: "API Hub VN",
-  description: "Marketplace cao cấp cho API, chatbot và thanh toán an toàn dành cho developer.",
+  title: "SepayHub — Tài khoản hỗ trợ thanh toán online SePay",
+  description:
+    "Mua tài khoản SePay, cổng thanh toán, API checkout và hỗ trợ tích hợp. Thanh toán an toàn, bàn giao nhanh, xuất hóa đơn chuyên nghiệp.",
 };
 
 export default function RootLayout({
@@ -23,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="vi" className={`${inter.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-[#f0f4f8] text-slate-800">{children}</body>
     </html>
   );
 }
