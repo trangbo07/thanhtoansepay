@@ -26,12 +26,7 @@ export default async function InvoicePage({ params, searchParams }: InvoicePageP
   const product = getProductByInvoice(invoice);
   const resolvedAmount = amount > 0 ? amount : (product?.amount ?? 0);
   const status = query.status === "pending" ? "pending" : "paid";
-  const paymentMethod =
-    query.method === "vietqr"
-      ? "VietQR — Chuyển khoản ngân hàng"
-      : query.method === "sepay"
-        ? "SePay — Cổng thanh toán"
-        : undefined;
+  const paymentMethod = "SePay — Cổng thanh toán";
 
   const data = {
     invoiceNumber: buildInvoiceNumber(invoice),

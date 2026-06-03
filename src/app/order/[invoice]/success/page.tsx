@@ -22,14 +22,13 @@ export default async function OrderSuccessPage({ params, searchParams }: Success
   const amount = Number(query.amount ?? product?.amount ?? 0);
   const description = query.description ?? `Thanh toán đơn hàng ${invoice}`;
   const productName = query.product ?? product?.name ?? description;
-  const paymentMethod = query.method === "vietqr" ? "VietQR / chuyển khoản" : "SePay";
+  const paymentMethod = "SePay";
 
   const invoiceUrl = buildInvoiceUrl(invoice, {
     amount,
     description,
     product: productName,
     status: "paid",
-    method: query.method,
   });
 
   return (

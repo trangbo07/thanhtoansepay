@@ -24,6 +24,7 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
   const productName = query.product ?? product?.name ?? `Đơn hàng ${invoice}`;
   const description = query.description ?? productName;
   const paymentState = query.payment;
+  const shouldAutoStart = !paymentState || paymentState === "pending";
 
   const baseQuery = `amount=${amount}&description=${encodeURIComponent(description)}&product=${encodeURIComponent(productName)}`;
   const successUrl = `/order/${invoice}/success?${baseQuery}`;
@@ -55,26 +56,28 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
               </div>
               <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
                 <p className="text-xs text-slate-500">Trạng thái</p>
-                <p className="mt-1 text-sm font-semibold text-slate-700">Chờ chọn cổng thanh toán</p>
+                <p className="mt-1 text-sm font-semibold text-[#1d6fd8]">
+                  {shouldAutoStart ? "Chuyển sang SePay..." : "Chờ thanh toán"}
+                </p>
               </div>
             </div>
 
             {paymentState && paymentState !== "pending" ? (
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
                 {paymentState === "cancel"
-                  ? "Bạn đã hủy thanh toán SePay. Chọn lại cổng bên dưới."
-                  : "Thanh toán SePay gặp lỗi. Thử lại hoặc dùng VietQR."}
+                  ? "Bạn đã hủy thanh toán. Bấm nút bên dưới để thử lại."
+                  : "Thanh toán gặp lỗi. Vui lòng thử lại."}
               </div>
             ) : null}
 
             <OrderPayment
               invoice={invoice}
               amount={amount}
-              productName={productName}
               description={description}
               successUrl={successUrl}
               errorPath={`${orderPath}&payment=error`}
               cancelPath={`${orderPath}&payment=cancel`}
+              autoStart={shouldAutoStart}
             />
           </div>
         </div>
