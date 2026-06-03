@@ -229,6 +229,23 @@ export const PRODUCTS: Product[] = [
     icon: "EN",
     imageUrl: PRODUCT_IMAGES.sepayIcon,
   },
+   {
+    id: "sp-11",
+    invoice: "SP2411",
+    name: "Thẻ cào 20K",
+    category: "Thẻ cào",
+    description: "Thẻ cào 20K được thanh toán qua SePay",
+    amount: 20000,
+    originalAmount: 19500,
+    rating: 5,
+    sold: "0",
+    stockTotal: 1000,
+    stockLeft: 1000,
+    badge: "Thẻ cào",
+    accent: "from-yellow-500 to-amber-600",
+    icon: "TC",
+    imageUrl: PRODUCT_IMAGES.sepayIcon,
+  }
 ];
 
 export function getProductByInvoice(invoice: string) {
