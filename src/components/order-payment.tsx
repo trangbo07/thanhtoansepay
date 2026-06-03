@@ -19,7 +19,7 @@ export function OrderPayment({
   successUrl,
   errorPath,
   cancelPath,
-  autoStart = true,
+  autoStart = false,
 }: OrderPaymentProps) {
   const orderAmount = amount > 0 ? amount : 10000;
 

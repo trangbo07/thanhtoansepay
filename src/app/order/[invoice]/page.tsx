@@ -3,8 +3,6 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { formatCurrency } from "@/lib/format";
 import { getProductByInvoice } from "@/lib/products";
-import { redirect } from "next/navigation";
-
 type OrderPageProps = {
   params: Promise<{ invoice: string }>;
   searchParams: Promise<{
@@ -24,15 +22,11 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
   const productName = query.product ?? product?.name ?? `Đơn hàng ${invoice}`;
   const description = query.description ?? productName;
   const paymentState = query.payment;
-  const shouldAutoStart = !paymentState || paymentState === "pending";
+  const shouldAutoStart = false;
 
   const baseQuery = `amount=${amount}&description=${encodeURIComponent(description)}&product=${encodeURIComponent(productName)}`;
-  const successUrl = `/order/${invoice}/success?${baseQuery}`;
+  const paymentResultUrl = `/order/${invoice}/payment-result?${baseQuery}`;
   const orderPath = `/order/${invoice}?${baseQuery}`;
-
-  if (paymentState === "success") {
-    redirect(successUrl);
-  }
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f0f4f8]">
@@ -57,7 +51,7 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
               <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
                 <p className="text-xs text-slate-500">Trạng thái</p>
                 <p className="mt-1 text-sm font-semibold text-[#1d6fd8]">
-                  {shouldAutoStart ? "Chuyển sang SePay..." : "Chờ thanh toán"}
+                  Chờ thanh toán qua SePay
                 </p>
               </div>
             </div>
@@ -74,7 +68,7 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
               invoice={invoice}
               amount={amount}
               description={description}
-              successUrl={successUrl}
+              successUrl={paymentResultUrl}
               errorPath={`${orderPath}&payment=error`}
               cancelPath={`${orderPath}&payment=cancel`}
               autoStart={shouldAutoStart}

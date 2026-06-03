@@ -2,7 +2,9 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { buildInvoiceUrl } from "@/lib/invoice";
 import { formatCurrency, formatPrice } from "@/lib/format";
+import { verifyOrderPaid } from "@/lib/sepay-verify";
 import { getProductByInvoice } from "@/lib/products";
+import { redirect } from "next/navigation";
 
 type SuccessPageProps = {
   params: Promise<{ invoice: string }>;
@@ -10,13 +12,21 @@ type SuccessPageProps = {
     amount?: string;
     description?: string;
     product?: string;
-    method?: string;
   }>;
 };
 
 export default async function OrderSuccessPage({ params, searchParams }: SuccessPageProps) {
   const { invoice } = await params;
   const query = await searchParams;
+
+  if (!(await verifyOrderPaid(invoice))) {
+    const baseQuery = new URLSearchParams({
+      amount: query.amount ?? "0",
+      description: query.description ?? "",
+      product: query.product ?? "",
+    });
+    redirect(`/order/${invoice}/payment-result?${baseQuery.toString()}`);
+  }
 
   const product = getProductByInvoice(invoice);
   const amount = Number(query.amount ?? product?.amount ?? 0);
@@ -44,7 +54,7 @@ export default async function OrderSuccessPage({ params, searchParams }: Success
             <p className="text-sm font-medium uppercase tracking-wider opacity-90">Thanh toán thành công</p>
             <h1 className="mt-2 text-2xl font-bold">Cảm ơn bạn đã mua hàng!</h1>
             <p className="mt-3 text-sm text-emerald-50">
-              Đơn {invoice} đã được ghi nhận. Tài khoản / quyền truy cập sẽ được bàn giao trong vài phút.
+              Đơn {invoice} đã được SePay xác nhận thanh toán. Quyền truy cập sẽ được bàn giao trong vài phút.
             </p>
           </div>
 
@@ -80,10 +90,6 @@ export default async function OrderSuccessPage({ params, searchParams }: Success
               href={invoiceUrl}
               className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#1d6fd8] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1558b0] sm:flex-none"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
-              </svg>
               Xem & in hóa đơn
             </a>
             <a

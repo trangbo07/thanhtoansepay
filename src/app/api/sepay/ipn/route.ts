@@ -1,3 +1,4 @@
+import { markOrderPaid } from "@/lib/payment-store";
 import { getPublicSiteUrl } from "@/lib/sepay-site";
 import { NextResponse } from "next/server";
 
@@ -37,6 +38,13 @@ export async function POST(request: Request) {
   const invoiceNumber = order?.order_invoice_number as string | undefined;
 
   if (notificationType === "ORDER_PAID" && invoiceNumber) {
+    const orderAmount = order?.order_amount;
+    markOrderPaid({
+      invoice: invoiceNumber,
+      amount: orderAmount != null ? Number(orderAmount) : undefined,
+      paidAt: new Date().toISOString(),
+      sepayOrderId: typeof order?.order_id === "string" ? order.order_id : undefined,
+    });
     console.log(`[sepay:ipn] ORDER_PAID invoice=${invoiceNumber}`);
   }
 
