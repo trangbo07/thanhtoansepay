@@ -1,17 +1,7 @@
 import { getSepayEnvironment } from "@/lib/sepay-config";
+import { getPublicSiteUrl } from "@/lib/sepay-site";
 import { SePayPgClient } from "sepay-pg-node";
 import { NextResponse } from "next/server";
-
-function resolvePublicBaseUrl(request: Request) {
-  const forwardedProto = request.headers.get("x-forwarded-proto");
-  const forwardedHost = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-
-  if (forwardedHost) {
-    return `${forwardedProto ?? "https"}://${forwardedHost}`;
-  }
-
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-}
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
@@ -32,7 +22,7 @@ export async function POST(request: Request) {
   const merchantId = process.env.SEPAY_MERCHANT_ID;
   const secretKey = process.env.SEPAY_SECRET_KEY;
   const sepayEnv = getSepayEnvironment();
-  const siteUrl = resolvePublicBaseUrl(request);
+  const siteUrl = getPublicSiteUrl(request);
 
   if (!order_invoice_number || !order_amount || !success_path || !error_path || !cancel_path) {
     return NextResponse.json(

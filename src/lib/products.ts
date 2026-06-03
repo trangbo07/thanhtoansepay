@@ -35,7 +35,7 @@ export const SITE = {
   address: "24 Công viên phần mềm Quang Trung, Trung Mỹ Tây, Hồ Chí Minh",
   taxCode: "0312345678",
   bankAccount: "1037938021 — Vietcombank",
-  lookupWebsite: "https://taikhoantech.store/",
+  lookupWebsite: "https://thanhtoansepay.vercel.app",
 };
 
 export const PRODUCTS: Product[] = [

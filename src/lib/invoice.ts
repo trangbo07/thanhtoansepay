@@ -1,3 +1,4 @@
+import { getPublicSiteUrl } from "@/lib/sepay-site";
 import { SITE } from "@/lib/products";
 
 /** Mẫu hóa đơn bán hàng (kiểu MISA / TT78) */
@@ -34,8 +35,7 @@ export function buildLookupCode(invoiceNumber: string, orderCode: string) {
 }
 
 export function buildInvoiceLookupUrl(lookupCode: string) {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  return `${base}/tra-cuu?ma=${lookupCode}`;
+  return `${getPublicSiteUrl()}/tra-cuu?ma=${lookupCode}`;
 }
 
 export function buildInvoiceQrUrl(lookupCode: string) {
