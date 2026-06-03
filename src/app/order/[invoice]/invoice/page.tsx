@@ -2,7 +2,7 @@ import { InvoiceActions } from "@/components/invoice-actions";
 import { InvoiceDocument } from "@/components/invoice-document";
 import { buildInvoiceNumber } from "@/lib/invoice";
 import { resolveProductByOrderCode } from "@/lib/order-code";
-import { verifyOrderPaid } from "@/lib/sepay-verify";
+import { resolveSepayOrderIdFromQuery, verifyOrderPaid } from "@/lib/sepay-verify";
 
 type InvoicePageProps = {
   params: Promise<{ invoice: string }>;
@@ -14,6 +14,8 @@ type InvoicePageProps = {
     method?: string;
     customer?: string;
     email?: string;
+    sepay_order_id?: string;
+    order_id?: string;
   }>;
 };
 
@@ -26,7 +28,8 @@ export default async function InvoicePage({ params, searchParams }: InvoicePageP
   const productName = query.product ?? description;
   const product = resolveProductByOrderCode(invoice);
   const resolvedAmount = amount > 0 ? amount : (product?.amount ?? 0);
-  const paid = await verifyOrderPaid(invoice);
+  const sepayOrderId = resolveSepayOrderIdFromQuery(query);
+  const paid = await verifyOrderPaid(invoice, sepayOrderId);
   const status = paid ? "paid" : "pending";
   const paymentMethod = "SePay — Cổng thanh toán";
 

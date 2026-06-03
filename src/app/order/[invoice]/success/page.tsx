@@ -2,7 +2,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { buildInvoiceUrl } from "@/lib/invoice";
 import { formatCurrency, formatPrice } from "@/lib/format";
-import { verifyOrderPaid } from "@/lib/sepay-verify";
+import { resolveSepayOrderIdFromQuery, verifyOrderPaid } from "@/lib/sepay-verify";
 import { isCatalogInvoice, resolveProductByOrderCode } from "@/lib/order-code";
 import { buildOrderUrl } from "@/lib/products";
 import { redirect } from "next/navigation";
@@ -13,6 +13,8 @@ type SuccessPageProps = {
     amount?: string;
     description?: string;
     product?: string;
+    sepay_order_id?: string;
+    order_id?: string;
   }>;
 };
 
@@ -20,15 +22,21 @@ export default async function OrderSuccessPage({ params, searchParams }: Success
   const { invoice } = await params;
   const query = await searchParams;
 
-  if (isCatalogInvoice(invoice) || !(await verifyOrderPaid(invoice))) {
+  const sepayOrderId = resolveSepayOrderIdFromQuery(query);
+
+  if (isCatalogInvoice(invoice)) {
+    const catalogProduct = resolveProductByOrderCode(invoice);
+    redirect(catalogProduct ? buildOrderUrl(catalogProduct) : "/");
+  }
+
+  if (!(await verifyOrderPaid(invoice, sepayOrderId))) {
     const baseQuery = new URLSearchParams({
       amount: query.amount ?? "0",
       description: query.description ?? "",
       product: query.product ?? "",
     });
-    if (isCatalogInvoice(invoice)) {
-      const catalogProduct = resolveProductByOrderCode(invoice);
-      redirect(catalogProduct ? buildOrderUrl(catalogProduct) : "/");
+    if (sepayOrderId) {
+      baseQuery.set("sepay_order_id", sepayOrderId);
     }
     redirect(`/order/${invoice}/payment-result?${baseQuery.toString()}`);
   }

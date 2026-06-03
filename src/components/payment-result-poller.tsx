@@ -5,17 +5,19 @@ import { useEffect, useState } from "react";
 
 type PaymentResultPollerProps = {
   invoice: string;
+  sepayOrderId: string;
   successUrl: string;
   orderUrl: string;
 };
 
 export function PaymentResultPoller({
   invoice,
+  sepayOrderId,
   successUrl,
   orderUrl,
 }: PaymentResultPollerProps) {
   const router = useRouter();
-  const [message, setMessage] = useState("Đang xác minh thanh toán với SePay...");
+  const [message, setMessage] = useState("Đang xác minh giao dịch SePay...");
   const maxAttempts = 30;
   const pollIntervalMs = 2000;
 
@@ -26,7 +28,11 @@ export function PaymentResultPoller({
 
     async function check() {
       try {
-        const res = await fetch(`/api/sepay/payment-status?invoice=${encodeURIComponent(invoice)}`, {
+        const params = new URLSearchParams({
+          invoice,
+          sepay_order_id: sepayOrderId,
+        });
+        const res = await fetch(`/api/sepay/payment-status?${params.toString()}`, {
           cache: "no-store",
         });
         const data = await res.json();
@@ -41,7 +47,7 @@ export function PaymentResultPoller({
         attempts += 1;
         if (attempts >= maxAttempts) {
           setMessage(
-            "Chưa nhận xác nhận thanh toán từ SePay. Nếu đã quét QR/chuyển khoản, đợi thêm vài phút rồi tải lại trang.",
+            "Chưa nhận xác nhận thanh toán cho giao dịch này. Nếu đã quét QR, đợi thêm vài phút rồi tải lại trang.",
           );
           return;
         }
@@ -62,7 +68,7 @@ export function PaymentResultPoller({
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [invoice, router, successUrl]);
+  }, [invoice, router, sepayOrderId, successUrl]);
 
   return (
     <div className="space-y-4 text-center">
@@ -71,8 +77,11 @@ export function PaymentResultPoller({
       <p className="text-xs text-slate-500">
         Mã đơn: <span className="font-mono font-semibold">{invoice}</span>
       </p>
+      <p className="text-xs text-slate-500">
+        Mã SePay: <span className="font-mono font-semibold">{sepayOrderId}</span>
+      </p>
       <p className="text-xs leading-relaxed text-slate-500">
-        Trang thành công chỉ hiển thị khi SePay xác nhận đơn ở trạng thái đã thanh toán (CAPTURED).
+        Chỉ xác nhận khi đúng giao dịch <span className="font-mono">{sepayOrderId}</span> ở trạng thái CAPTURED.
       </p>
       <a
         href={orderUrl}

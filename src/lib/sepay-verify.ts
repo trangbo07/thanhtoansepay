@@ -2,15 +2,15 @@ import { isCatalogInvoice } from "@/lib/order-code";
 import { getSepayEnvironment } from "@/lib/sepay-config";
 import { isOrderPaid, markOrderPaid } from "@/lib/payment-store";
 
-type SepayOrderRow = {
+type SepayOrderDetail = {
   order_id?: string;
   order_invoice_number?: string;
   order_status?: string;
   order_amount?: string;
 };
 
-type SepayOrderListResponse = {
-  data?: SepayOrderRow[];
+type SepayOrderDetailResponse = {
+  data?: SepayOrderDetail;
 };
 
 function getSepayPgApiBase() {
@@ -28,69 +28,86 @@ function getSepayBasicAuth() {
   return Buffer.from(`${merchantId}:${secretKey}`).toString("base64");
 }
 
-async function fetchCapturedOrderByInvoice(invoice: string): Promise<SepayOrderRow | null> {
+export function resolveSepayOrderIdFromQuery(
+  query: Record<string, string | string[] | undefined>,
+): string | null {
+  const raw =
+    (typeof query.sepay_order_id === "string" ? query.sepay_order_id : undefined) ??
+    (typeof query.order_id === "string" ? query.order_id : undefined);
+  const trimmed = raw?.trim();
+  return trimmed || null;
+}
+
+/** GET /v1/order/detail/{order_id} — xác minh đúng giao dịch PAY… / SEPAY-… */
+export async function fetchSepayOrderDetail(sepayOrderId: string): Promise<SepayOrderDetail | null> {
   const auth = getSepayBasicAuth();
   if (!auth) {
     return null;
   }
 
   const base = getSepayPgApiBase();
-  const queries = [
-    `per_page=20&page=1&q=${encodeURIComponent(invoice)}&order_status=CAPTURED&sort=created_at%3Adesc`,
-    `per_page=20&page=1&q=${encodeURIComponent(invoice)}&sort=created_at%3Adesc`,
-  ];
 
-  for (const query of queries) {
-    try {
-      const res = await fetch(`${base}/v1/order?${query}`, {
-        headers: { Authorization: `Basic ${auth}` },
-        cache: "no-store",
-      });
+  try {
+    const res = await fetch(`${base}/v1/order/detail/${encodeURIComponent(sepayOrderId)}`, {
+      headers: { Authorization: `Basic ${auth}` },
+      cache: "no-store",
+    });
 
-      if (!res.ok) {
-        continue;
-      }
-
-      const json = (await res.json()) as SepayOrderListResponse;
-      const rows = json.data ?? [];
-      const match = rows.find(
-        (row) =>
-          row.order_invoice_number === invoice && row.order_status === "CAPTURED",
-      );
-
-      if (match) {
-        return match;
-      }
-    } catch {
-      // try next query variant
+    if (!res.ok) {
+      return null;
     }
-  }
 
-  return null;
+    const json = (await res.json()) as SepayOrderDetailResponse;
+    return json.data ?? null;
+  } catch {
+    return null;
+  }
 }
 
-/** True only when IPN/store or SePay API reports CAPTURED for this unique order code. */
-export async function verifyOrderPaid(invoice: string): Promise<boolean> {
-  if (isOrderPaid(invoice)) {
-    return true;
-  }
-
-  // Mã catalog (SP2411, AI9182787…) dùng chung — không coi đơn cũ trên SePay là thanh toán của phiên này.
-  if (isCatalogInvoice(invoice)) {
+export async function verifySepayOrderCaptured(
+  sepayOrderId: string,
+  expectedInvoice?: string,
+): Promise<boolean> {
+  const detail = await fetchSepayOrderDetail(sepayOrderId);
+  if (!detail || detail.order_status !== "CAPTURED") {
     return false;
   }
 
-  const captured = await fetchCapturedOrderByInvoice(invoice);
-  if (!captured) {
+  if (expectedInvoice && detail.order_invoice_number !== expectedInvoice) {
+    return false;
+  }
+
+  const invoice = detail.order_invoice_number ?? expectedInvoice;
+  if (!invoice) {
     return false;
   }
 
   markOrderPaid({
     invoice,
-    amount: captured.order_amount != null ? Number(captured.order_amount) : undefined,
+    amount: detail.order_amount != null ? Number(detail.order_amount) : undefined,
     paidAt: new Date().toISOString(),
-    sepayOrderId: captured.order_id,
+    sepayOrderId: detail.order_id ?? sepayOrderId,
   });
 
   return true;
+}
+
+/**
+ * Chỉ coi đã thanh toán khi:
+ * - IPN đã ghi nhận (cùng mã đơn), hoặc
+ * - Có sepay_order_id và API detail trả CAPTURED khớp mã đơn.
+ */
+export async function verifyOrderPaid(
+  invoice: string,
+  sepayOrderId?: string | null,
+): Promise<boolean> {
+  if (sepayOrderId) {
+    return verifySepayOrderCaptured(sepayOrderId, invoice);
+  }
+
+  if (isCatalogInvoice(invoice)) {
+    return false;
+  }
+
+  return isOrderPaid(invoice);
 }

@@ -14,8 +14,6 @@ export function createOrderInvoiceNumber(catalogInvoice: string) {
   return `${catalogInvoice}-${ts}${rand}`;
 }
 
-export { createOrderInvoiceNumber as newOrderCode };
-
 export function resolveProductByOrderCode(orderCode: string): Product | undefined {
   const exact = PRODUCTS.find((p) => p.invoice === orderCode);
   if (exact) return exact;
