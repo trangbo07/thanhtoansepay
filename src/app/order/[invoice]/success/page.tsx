@@ -3,7 +3,8 @@ import { SiteHeader } from "@/components/site-header";
 import { buildInvoiceUrl } from "@/lib/invoice";
 import { formatCurrency, formatPrice } from "@/lib/format";
 import { verifyOrderPaid } from "@/lib/sepay-verify";
-import { getProductByInvoice } from "@/lib/products";
+import { isCatalogInvoice, resolveProductByOrderCode } from "@/lib/order-code";
+import { buildOrderUrl } from "@/lib/products";
 import { redirect } from "next/navigation";
 
 type SuccessPageProps = {
@@ -19,16 +20,20 @@ export default async function OrderSuccessPage({ params, searchParams }: Success
   const { invoice } = await params;
   const query = await searchParams;
 
-  if (!(await verifyOrderPaid(invoice))) {
+  if (isCatalogInvoice(invoice) || !(await verifyOrderPaid(invoice))) {
     const baseQuery = new URLSearchParams({
       amount: query.amount ?? "0",
       description: query.description ?? "",
       product: query.product ?? "",
     });
+    if (isCatalogInvoice(invoice)) {
+      const catalogProduct = resolveProductByOrderCode(invoice);
+      redirect(catalogProduct ? buildOrderUrl(catalogProduct) : "/");
+    }
     redirect(`/order/${invoice}/payment-result?${baseQuery.toString()}`);
   }
 
-  const product = getProductByInvoice(invoice);
+  const product = resolveProductByOrderCode(invoice);
   const amount = Number(query.amount ?? product?.amount ?? 0);
   const description = query.description ?? `Thanh toán đơn hàng ${invoice}`;
   const productName = query.product ?? product?.name ?? description;

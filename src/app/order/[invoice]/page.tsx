@@ -2,7 +2,13 @@ import { OrderPayment } from "@/components/order-payment";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { formatCurrency } from "@/lib/format";
-import { getProductByInvoice } from "@/lib/products";
+import {
+  createOrderInvoiceNumber,
+  isCatalogInvoice,
+  resolveProductByOrderCode,
+} from "@/lib/order-code";
+import { redirect } from "next/navigation";
+
 type OrderPageProps = {
   params: Promise<{ invoice: string }>;
   searchParams: Promise<{
@@ -17,7 +23,18 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
   const { invoice } = await params;
   const query = await searchParams;
 
-  const product = getProductByInvoice(invoice);
+  if (isCatalogInvoice(invoice)) {
+    const orderCode = createOrderInvoiceNumber(invoice);
+    const params = new URLSearchParams({
+      amount: query.amount ?? "",
+      description: query.description ?? "",
+      product: query.product ?? "",
+      payment: query.payment ?? "pending",
+    });
+    redirect(`/order/${orderCode}?${params.toString()}`);
+  }
+
+  const product = resolveProductByOrderCode(invoice);
   const amount = Number(query.amount ?? product?.amount ?? 0);
   const productName = query.product ?? product?.name ?? `Đơn hàng ${invoice}`;
   const description = query.description ?? productName;

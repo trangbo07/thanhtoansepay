@@ -252,14 +252,21 @@ export function getProductByInvoice(invoice: string) {
   return PRODUCTS.find((p) => p.invoice === invoice);
 }
 
+function newOrderCode(catalogInvoice: string) {
+  const ts = Date.now().toString(36).toUpperCase();
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `${catalogInvoice}-${ts}${rand}`;
+}
+
 export function buildOrderUrl(product: Product) {
+  const orderCode = newOrderCode(product.invoice);
   const params = new URLSearchParams({
     amount: String(product.amount),
     description: product.name,
     product: product.name,
     payment: "pending",
   });
-  return `/order/${product.invoice}?${params.toString()}`;
+  return `/order/${orderCode}?${params.toString()}`;
 }
 
 export function discountPercent(amount: number, original: number) {

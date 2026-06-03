@@ -2,7 +2,7 @@ import { PaymentResultPoller } from "@/components/payment-result-poller";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { verifyOrderPaid } from "@/lib/sepay-verify";
-import { getProductByInvoice } from "@/lib/products";
+import { resolveProductByOrderCode } from "@/lib/order-code";
 import { redirect } from "next/navigation";
 
 type PaymentResultPageProps = {
@@ -18,7 +18,7 @@ export default async function PaymentResultPage({ params, searchParams }: Paymen
   const { invoice } = await params;
   const query = await searchParams;
 
-  const product = getProductByInvoice(invoice);
+  const product = resolveProductByOrderCode(invoice);
   const amount = Number(query.amount ?? product?.amount ?? 0);
   const description = query.description ?? product?.name ?? `Đơn hàng ${invoice}`;
   const productName = query.product ?? description;

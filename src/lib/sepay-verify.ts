@@ -1,3 +1,4 @@
+import { isCatalogInvoice } from "@/lib/order-code";
 import { getSepayEnvironment } from "@/lib/sepay-config";
 import { isOrderPaid, markOrderPaid } from "@/lib/payment-store";
 
@@ -68,10 +69,15 @@ async function fetchCapturedOrderByInvoice(invoice: string): Promise<SepayOrderR
   return null;
 }
 
-/** True only when IPN/store or SePay API reports CAPTURED for this invoice. */
+/** True only when IPN/store or SePay API reports CAPTURED for this unique order code. */
 export async function verifyOrderPaid(invoice: string): Promise<boolean> {
   if (isOrderPaid(invoice)) {
     return true;
+  }
+
+  // Mã catalog (SP2411, AI9182787…) dùng chung — không coi đơn cũ trên SePay là thanh toán của phiên này.
+  if (isCatalogInvoice(invoice)) {
+    return false;
   }
 
   const captured = await fetchCapturedOrderByInvoice(invoice);

@@ -12,7 +12,8 @@ import {
   INVOICE_ISSUER_LINE,
 } from "@/lib/invoice";
 import { PRODUCT_IMAGES } from "@/lib/product-images";
-import { SITE, getProductByInvoice } from "@/lib/products";
+import { resolveProductByOrderCode } from "@/lib/order-code";
+import { SITE } from "@/lib/products";
 
 export type InvoiceData = {
   invoiceNumber: string;
@@ -58,7 +59,7 @@ export function InvoiceDocument({ data }: { data: InvoiceData }) {
   const issuedAt = data.paidAt ?? new Date();
   const { net, vat } = vatFromGross(data.amount);
   const total = data.amount;
-  const product = getProductByInvoice(data.orderCode);
+  const product = resolveProductByOrderCode(data.orderCode);
   const lookupCode = buildLookupCode(data.invoiceNumber, data.orderCode);
   const qrUrl = buildInvoiceQrUrl(lookupCode);
   const paymentLabel =
