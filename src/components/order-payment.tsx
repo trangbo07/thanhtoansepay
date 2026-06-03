@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { SepayEnvBanner } from "@/components/sepay-env-banner";
 import { SePayCheckoutForm } from "@/components/sepay-checkout-form";
 import { VietQrPayment } from "@/components/vietqr-payment";
 import { PAYMENT_GATEWAYS, type PaymentGateway } from "@/lib/payment-config";
@@ -46,7 +45,6 @@ export function OrderPayment({
   if (gateway === "sepay") {
     return (
       <div className="space-y-4">
-        <SepayEnvBanner />
         <SePayCheckoutForm
           orderInvoiceNumber={invoice}
           orderAmount={orderAmount}
